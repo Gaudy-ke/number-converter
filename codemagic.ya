@@ -1,0 +1,52 @@
+workflows:
+  flutter-workflow:
+    name: Flutter Workflow
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      cocoapods: default
+      node: 16.0.0
+      xcode: latest
+      env:
+        # You can set your custom environment variables here
+        # Example: 
+        # API_KEY: your_api_key
+        CM_BUILD_ID: $CM_BUILD_ID
+    triggering:
+      events:
+        - push
+        - pull_request
+    cache:
+      # Cache flutter dependencies
+      cache_paths:
+        - $HOME/.pub-cache
+        - build
+    scripts:
+      # Define the steps for your workflow
+
+      # Install Flutter dependencies
+      - name: Install dependencies
+        script: |
+          flutter packages get
+
+      # Run Flutter tests
+      - name: Run tests
+        script: |
+          flutter test
+
+      # Build APK for Android
+      - name: Build APK
+        script: |
+          flutter build apk --release
+
+      # Build iOS app if on macOS
+      - name: Build iOS
+        script: |
+          if [ "$FCI_OS_NAME" = "macOS" ]; then
+            flutter build ios --release --no-codesign
+          fi
+
+    artifacts:
+      # Upload APK and iOS app as artifacts
+      - build//outputs//*.apk
+      - build/ios/iphoneos/*.app
